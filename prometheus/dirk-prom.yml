@@ -1,3 +1,0 @@
-  - job_name: 'dirk'
-    static_configs:
-      - targets: ['dirk:8081']

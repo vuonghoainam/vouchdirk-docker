@@ -17,6 +17,8 @@ services:
       - ./config/vouch${VOUCH_INSTANCE}.yml:/config/vouch.yml:ro
       - ./config/vouch-ee.json:/config/vouch-ee.json:ro
       - ./config/certs:/config/certs:ro
+    networks:
+      - internet_access
     labels:
       - traefik.enable=true
       - traefik.http.routers.${MEV_HOST:-mev}.service=${MEV_HOST:-mev}

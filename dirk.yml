@@ -10,30 +10,39 @@ x-logging: &logging
 services:
   dirk:
     image: attestant/dirk:${DIRK_DOCKER_TAG}
+    hostname: dirk${DIRK_INSTANCE}
     restart: unless-stopped
     command: ["--base-dir=/config"]
     ports:
       - 13141:13141/tcp 
+    networks:
+      - internet_access
     volumes:
       - ./config/dirk${DIRK_INSTANCE}.yml:/config/dirk.yml:ro
       - ./config/certs:/config/certs:ro
       - ./config/passphrases:/config/passphrases:ro
       - dirk-data:/data
     <<: *logging
+
   create-wallet:
     profiles: ["tools"]
     image: wealdtech/ethdo:${ETHDO_DOCKER_TAG}
     volumes:
       - dirk-data:/data
+    networks:
+      - internet_access
     command:
       - --base-dir=/data/wallets
       - wallet
       - create
       - --type=distributed
       - --wallet=${WALLET_NAME}
+
   create-accounts:
     profiles: ["tools"]
     image: wealdtech/ethdo:${ETHDO_DOCKER_TAG}
+    networks:
+      - internet_access
     volumes:
       - ./config/certs:/config/certs:ro
     entrypoint: ["/bin/bash","-c"]
@@ -47,16 +56,19 @@ services:
           --client-cert /config/certs/vouch${VOUCH_INSTANCE}.crt \
           --client-key /config/certs/vouch${VOUCH_INSTANCE}.key \
           --account=${WALLET_NAME}/val-$$i \
-          --signing-threshold=3 \
+          --signing-threshold=3 \traefik
           --participants=5
           echo Created validator account $$i
         done
+
   create-depositdata:
     profiles: ["tools"]
     image: wealdtech/ethdo:${ETHDO_DOCKER_TAG}
     volumes:
       - ./config/certs:/config/certs:ro
       - ./config/depositdata:/config/depositdata:rw
+    networks:
+      - internet_access
     entrypoint: ["/bin/bash","-c"]
     command:
       - |
@@ -74,11 +86,14 @@ services:
           --withdrawaladdress ${WITHDRAWAL_ADDRESS} > /config/depositdata/deposit-val-$$i.json
           echo Created depositdata for validator $$i
         done
+
   verify-account:
     profiles: ["tools"]
     image: wealdtech/ethdo:${ETHDO_DOCKER_TAG}
     volumes:
       - ./config/certs:/config/certs:ro
+    networks:
+      - internet_access
     entrypoint: ["/bin/bash","-c"]
     command:
       - |
@@ -99,12 +114,15 @@ services:
           --verbose
           echo
         done
+
   sign-exits:
     profiles: ["tools"]
     image: wealdtech/ethdo:${ETHDO_DOCKER_TAG}
     volumes:
       - ./config/certs:/config/certs:ro
       - ./config/exitmessages:/config/exitmessages:rw
+    networks:
+      - internet_access
     entrypoint: ["/bin/bash","-c"]
     command:
       - |
@@ -133,6 +151,8 @@ services:
     volumes:
       - ./config/exitmessages:/app/encryptor/input/:ro
       - ./config/exits:/app/encryptor/output/:rw
+    networks:
+      - internet_access
     environment:
       - MESSAGES_PASSWORD=${EXIT_PASSPHRASE}
     user: root
@@ -145,6 +165,8 @@ services:
       - ./config/certs:/config/certs:ro
       - ./keys:/app/keys
       - dirk-data:/data
+    networks:
+      - internet_access
     entrypoint: ["/bin/bash","-c"]
     command:
       - |
@@ -168,5 +190,11 @@ services:
         --passphrase=$${__passphrase} \
         > /app/keys/dirk${DIRK_INSTANCE}-export.dat
         echo
+
 volumes:
   dirk-data:
+
+networks:
+  # bridge network - this networks gets internet access!
+  internet_access:
+    driver: bridge
