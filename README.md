@@ -79,3 +79,148 @@ in the first place, and always having patience and time for explanations.
 - [Distributed key generation guide](https://github.com/attestantio/dirk/blob/master/docs/distributed_key_generation.md)
 - [Ethstaker Discord](https://discord.io/ethstaker)
 - [Attestant Discord](https://discord.gg/U5GNUuQQr3)
+
+
+```bash
+WALLET_NAME=DistributedWallet
+DIRK_INSTANCE=dirk1 # go from 1 to 5
+root@77451040715d:/app# /app/ethdo --base-dir=/data/wallets/${DIRK_INSTANCE}/wallets wallet create \
+         --type=distributed --wallet=${WALLET_NAME}
+Error: failed to process: wallet "DistributedWallet" already exists
+root@77451040715d:/app# /app/ethdo --base-dir=/data/wallets/${DIRK_INSTANCE}/wallets account create \
+         --remote=dirk1:13141 --server-ca-cert /config/certs/dirk_authority.crt \
+         --client-cert /config/certs/vouch1.crt --client-key /config/certs/vouch1.key \
+        --account="${WALLET_NAME}/val-1" --signing-threshold=3 --participants=5
+
+root@77451040715d:/app# DIRK_INSTANCE=dirk2
+root@77451040715d:/app# /app/ethdo --base-dir=/data/wallets/${DIRK_INSTANCE}/wallets account create          --remote=dirk1:13141 --server-ca-cert /config/certs/dirk_authority.crt          --client-cert /config/certs/vouch1.crt --client-key /config/certs/vouch1.key         --account="${WALLET_NAME}/val-1" --signing-threshold=3 --participants=5
+Error: failed to process: failed to create account: generate request failed: account already exists
+
+root@77451040715d:/app# DIRK_INSTANCE=dirk1
+root@77451040715d:/app# /app/ethdo --base-dir=/data/wallets/${DIRK_INSTANCE}/wallets account create \
+         --remote=dirk1:13141 --server-ca-cert /config/certs/dirk_authority.crt \
+         --client-cert /config/certs/vouch1.crt --client-key /config/certs/vouch1.key \
+        --account="${WALLET_NAME}/val-2" --signing-threshold=3 --participants=5
+root@77451040715d:/app# /app/ethdo --base-dir=/data/wallets/${DIRK_INSTANCE}/wallets account create \
+         --remote=dirk1:13141 --server-ca-cert /config/certs/dirk_authority.crt \
+         --client-cert /config/certs/vouch1.crt --client-key /config/certs/vouch1.key \
+        --account="${WALLET_NAME}/val-3" --signing-threshold=3 --participants=5
+
+root@77451040715d:/app# ACCOUNT_NAME=${WALLET_NAME}/val-3
+
+root@77451040715d:/app# /app/ethdo account info     --base-dir=/data/wallets/${DIRK_INSTANCE}/wallets     --remote=dirk1:13141     --server-ca-cert /config/certs/dirk_authority.crt     --client-cert /config/certs/vouch1.crt     --client-key /config/certs/vouch1.key     --account="$ACCOUNT_NAME"     --verbose
+UUID: 8b79a1cd-e81d-4d88-a802-589c44ad5d70
+Public key: 0xb19fb1019bcf04de12bd95c96d4498633ac499ed8b9ea8ee7465835d626f2f23bc3ed183bfc6ee2c533d5c1f4e4df8a4
+Composite public key: 0xb74f6532a836bed12337e52316ad26df898c509342f7a6abf997c3e7912980c88cc8677642692d60cd9d7c983d8a7fe2
+Signing threshold: 3/5
+Participants:
+ 45212209: dirk5:13141
+ 20362446: dirk1:13141
+ 37474837: dirk2:13141
+ 52717854: dirk3:13141
+ 29504835: dirk4:13141
+Withdrawal credentials: 0x0081fc2bcf8876d6aa3059b577c081e0373f351fa07345e6ab2212bfc271f583
+
+root@77451040715d:/app# ACCOUNT_NAME=${WALLET_NAME}/val-1
+root@77451040715d:/app# /app/ethdo account info     --base-dir=/data/wallets/${DIRK_INSTANCE}/wallets     --remote=dirk1:13141     --server-ca-cert /config/certs/dirk_authority.crt     --client-cert /config/certs/vouch1.crt     --client-key /config/certs/vouch1.key     --account="$ACCOUNT_NAME"     --verbose
+UUID: 6abdb91b-d831-42ba-be95-325d4c69e3ef
+Public key: 0x8408600b7be17923157903dbd2acb537aef9464058c5218b646104b2697857e7c0e4a668ac5b7297b7e258a500e38148
+Composite public key: 0x916f19d800788ef07ea6003852f149b8dfaccf219f16aff6fce9e729371fda1e46dd93ccdb7ce126f8a0d84e4f327a26
+Signing threshold: 3/5
+Participants:
+ 45212209: dirk5:13141
+ 20362446: dirk1:13141
+ 37474837: dirk2:13141
+ 52717854: dirk3:13141
+ 29504835: dirk4:13141
+Withdrawal credentials: 0x007da9f2c4deeae891b7da7d627fdd496f7fa26332e849cd55db5a95245a013d
+
+
+root@77451040715d:/app# ACCOUNT_NAME=${WALLET_NAME}/val-2
+root@77451040715d:/app# /app/ethdo account info     --base-dir=/data/wallets/${DIRK_INSTANCE}/wallets     --remote=dirk1:13141     --server-ca-cert /config/certs/dirk_authority.crt     --client-cert /config/certs/vouch1.crt     --client-key /config/certs/vouch1.key     --account="$ACCOUNT_NAME"     --verbose
+UUID: 6aa13b34-4a51-4f99-8975-06932ef77bcf
+Public key: 0x820261a30381306bacc6d6cc43df438291b0da6ac9ef1db3c0b34e51a0879479e123612394f596ef2f60c2de9efb4f3b
+Composite public key: 0x9019370fc97b4c8627a0c4365a683936bfd44419969eac8addfff4c644b33ca4d8c17a798baa2ce302fa821486548578
+Signing threshold: 3/5
+Participants:
+ 20362446: dirk1:13141
+ 37474837: dirk2:13141
+ 52717854: dirk3:13141
+ 29504835: dirk4:13141
+ 45212209: dirk5:13141
+Withdrawal credentials: 0x001c348e58a359a86b27db258d1f83a9954ae0e81a47f5d842de8b31f13acef3
+
+
+root@77451040715d:/app# ACCOUNT_NAME=${WALLET_NAME}/val-4
+root@77451040715d:/app# /app/ethdo account info     --base-dir=/data/wallets/${DIRK_INSTANCE}/wallets     --remote=dirk1:13141     --server-ca-cert /config/certs/dirk_authority.crt     --client-cert /config/certs/vouch1.crt     --client-key /config/certs/vouch1.key     --account="$ACCOUNT_NAME"     --verbose
+Failed to obtain account: failed to obtain account: not found
+
+root@77451040715d:/app# /app/ethdo signature sign \
+    --remote=dirk1:13141 \
+    --server-ca-cert /config/certs/dirk_authority.crt \
+    --client-cert /config/certs/vouch1.crt \
+    --client-key /config/certs/vouch1.key \
+    --account="$ACCOUNT_NAME" \
+  --data=0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f \
+  --domain=0xf000000000000000000000000000000000000000000000000000000000000000 \
+  --verbose
+Failed to obtain account: unable to obtain account: failed to obtain account: not found
+
+
+root@77451040715d:/app# DIRK_INSTANCE=dirk1 # go from 1 to 5
+WALLET_NAME=DistributedWallet
+ACCOUNT_NAME=${WALLET_NAME}/val-1
+root@77451040715d:/app# /app/ethdo signature sign \
+    --remote=dirk1:13141 \
+    --server-ca-cert /config/certs/dirk_authority.crt \
+    --client-cert /config/certs/vouch1.crt \
+    --client-key /config/certs/vouch1.key \
+    --account="$ACCOUNT_NAME" \
+  --data=0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f \
+  --domain=0xf000000000000000000000000000000000000000000000000000000000000000 \
+  --verbose
+Signing 0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f with domain 0xf000000000000000000000000000000000000000000000000000000000000000 by public key 0x8408600b7be17923157903dbd2acb537aef9464058c5218b646104b2697857e7c0e4a668ac5b7297b7e258a500e38148
+0xb63fd76b43b2fb7c6734cd8666c23dd8f86527e334f668df2e4564fb84fd05d88a9d33c5c6714dacbbf64bd5b0b5109e09e8363d28326620acb5e863c215fd138b8d469ea73b65a83cdac697c71efbc6f6cc8fb4d82ddc236ceb56682629f8e7
+
+
+root@77451040715d:/app# /app/ethdo account info     --base-dir=/data/wallets/${DIRK_INSTANCE}/wallets     --remote=dirk1:13141     --server-ca-cert /config/certs/dirk_authority.crt     --client-cert /config/certs/vouch1.crt     --client-key /config/certs/vouch1.key     --account="$ACCOUNT_NAME"     --verbose
+UUID: 6abdb91b-d831-42ba-be95-325d4c69e3ef
+Public key: 0x8408600b7be17923157903dbd2acb537aef9464058c5218b646104b2697857e7c0e4a668ac5b7297b7e258a500e38148
+Composite public key: 0x916f19d800788ef07ea6003852f149b8dfaccf219f16aff6fce9e729371fda1e46dd93ccdb7ce126f8a0d84e4f327a26
+Signing threshold: 3/5
+Participants:
+ 52717854: dirk3:13141
+ 29504835: dirk4:13141
+ 45212209: dirk5:13141
+ 20362446: dirk1:13141
+ 37474837: dirk2:13141
+Withdrawal credentials: 0x007da9f2c4deeae891b7da7d627fdd496f7fa26332e849cd55db5a95245a013d
+
+
+root@77451040715d:/app# /app/ethdo account info     --base-dir=/data/wallets/${DIRK_INSTANCE}/wallets     --remote=dirk1:13141     --server-ca-cert /config/certs/dirk_authority.crt     --client-cert /config/certs/vouch1.crt     --client-key /config/certs/vouch1.key     --account="$ACCOUNT_NAME"     --verbose
+UUID: 6abdb91b-d831-42ba-be95-325d4c69e3ef
+Public key: 0x8408600b7be17923157903dbd2acb537aef9464058c5218b646104b2697857e7c0e4a668ac5b7297b7e258a500e38148
+Composite public key: 0x916f19d800788ef07ea6003852f149b8dfaccf219f16aff6fce9e729371fda1e46dd93ccdb7ce126f8a0d84e4f327a26
+Signing threshold: 3/5
+Participants:
+ 37474837: dirk2:13141
+ 52717854: dirk3:13141
+ 29504835: dirk4:13141
+ 45212209: dirk5:13141
+ 20362446: dirk1:13141
+Withdrawal credentials: 0x007da9f2c4deeae891b7da7d627fdd496f7fa26332e849cd55db5a95245a013d
+
+
+root@77451040715d:/app# /app/ethdo signature sign     --remote=dirk1:13141     --server-ca-cert /config/certs/dirk_authority.crt     --client-cert /config/certs/vouch1.crt     --client-key /config/certs/vouch1.key     --account="$ACCOUNT_NAME"   --data=0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f   --domain=0xf000000000000000000000000000000000000000000000000000000000000000   --verbose
+Signing 0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f with domain 0xf000000000000000000000000000000000000000000000000000000000000000 by public key 0x8408600b7be17923157903dbd2acb537aef9464058c5218b646104b2697857e7c0e4a668ac5b7297b7e258a500e38148
+0xb63fd76b43b2fb7c6734cd8666c23dd8f86527e334f668df2e4564fb84fd05d88a9d33c5c6714dacbbf64bd5b0b5109e09e8363d28326620acb5e863c215fd138b8d469ea73b65a83cdac697c71efbc6f6cc8fb4d82ddc236ceb56682629f8e7
+
+
+root@77451040715d:/app# /app/ethdo signature sign     --remote=dirk1:13141     --server-ca-cert /config/certs/dirk_authority.crt     --client-cert /config/certs/vouch1.crt     --client-key /config/certs/vouch1.key     --account="$ACCOUNT_NAME"   --data=0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f   --domain=0xf000000000000000000000000000000000000000000000000000000000000000   --verbose
+Signing 0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f with domain 0xf000000000000000000000000000000000000000000000000000000000000000 by public key 0x8408600b7be17923157903dbd2acb537aef9464058c5218b646104b2697857e7c0e4a668ac5b7297b7e258a500e38148
+Failed to sign: failed to obtain signature: not enough signatures: 2 signed, 0 denied, 0 failed, 3 errored
+
+root@77451040715d:/app# /app/ethdo signature sign     --remote=dirk1:13141     --server-ca-cert /config/certs/dirk_authority.crt     --client-cert /config/certs/vouch1.crt     --client-key /config/certs/vouch1.key     --account="$ACCOUNT_NAME"   --data=0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f   --domain=0xf000000000000000000000000000000000000000000000000000000000000000   --verbose
+Signing 0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f with domain 0xf000000000000000000000000000000000000000000000000000000000000000 by public key 0x8408600b7be17923157903dbd2acb537aef9464058c5218b646104b2697857e7c0e4a668ac5b7297b7e258a500e38148
+0xb63fd76b43b2fb7c6734cd8666c23dd8f86527e334f668df2e4564fb84fd05d88a9d33c5c6714dacbbf64bd5b0b5109e09e8363d28326620acb5e863c215fd138b8d469ea73b65a83cdac697c71efbc6f6cc8fb4d82ddc236ceb56682629f8e7
+```

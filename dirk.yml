@@ -8,29 +8,86 @@ x-logging: &logging
       max-size: "100m"
 
 services:
-  dirk:
+  dirk1:
     image: attestant/dirk:${DIRK_DOCKER_TAG}
-    hostname: dirk${DIRK_INSTANCE}
+    hostname: dirk1
     restart: unless-stopped
     command: ["--base-dir=/config"]
     ports:
-      - 13141:13141/tcp 
-    networks:
-      - internet_access
+      - 13141/tcp 
     volumes:
-      - ./config/dirk${DIRK_INSTANCE}.yml:/config/dirk.yml:ro
+      - ./config/dirk1.yml:/config/dirk.yml:ro
       - ./config/certs:/config/certs:ro
       - ./config/passphrases:/config/passphrases:ro
-      - dirk-data:/data
+      - ./data/dirk/dirk1:/data
+      - ./data/wallets/dirk1/wallets/:/tmp/wallets/
+    <<: *logging
+
+  dirk2:
+    image: attestant/dirk:${DIRK_DOCKER_TAG}
+    hostname: dirk2
+    restart: unless-stopped
+    command: ["--base-dir=/config"]
+    ports:
+      - 13141/tcp 
+    volumes:
+      - ./config/dirk2.yml:/config/dirk.yml:ro
+      - ./config/certs:/config/certs:ro
+      - ./config/passphrases:/config/passphrases:ro
+      - ./data/dirk/dirk2:/data
+      - ./data/wallets/dirk2/wallets/:/tmp/wallets/
+    <<: *logging
+
+  dirk3:
+    image: attestant/dirk:${DIRK_DOCKER_TAG}
+    hostname: dirk3
+    restart: unless-stopped
+    command: ["--base-dir=/config"]
+    ports:
+      - 13141/tcp 
+    volumes:
+      - ./config/dirk3.yml:/config/dirk.yml:ro
+      - ./config/certs:/config/certs:ro
+      - ./config/passphrases:/config/passphrases:ro
+      - ./data/dirk/dirk3:/data
+      - ./data/wallets/dirk3/wallets/:/tmp/wallets/
+    <<: *logging
+
+  dirk4:
+    image: attestant/dirk:${DIRK_DOCKER_TAG}
+    hostname: dirk4
+    restart: unless-stopped
+    command: ["--base-dir=/config"]
+    ports:
+      - 13141/tcp 
+    volumes:
+      - ./config/dirk4.yml:/config/dirk.yml:ro
+      - ./config/certs:/config/certs:ro
+      - ./config/passphrases:/config/passphrases:ro
+      - ./data/dirk/dirk4:/data
+      - ./data/wallets/dirk4/wallets/:/tmp/wallets/
+    <<: *logging
+
+  dirk5:
+    image: attestant/dirk:${DIRK_DOCKER_TAG}
+    hostname: dirk5
+    restart: unless-stopped
+    command: ["--base-dir=/config"]
+    ports:
+      - 13141/tcp 
+    volumes:
+      - ./config/dirk5.yml:/config/dirk.yml:ro
+      - ./config/certs:/config/certs:ro
+      - ./config/passphrases:/config/passphrases:ro
+      - ./data/dirk/dirk5:/data
+      - ./data/wallets/dirk5/wallets/:/tmp/wallets/
     <<: *logging
 
   create-wallet:
     profiles: ["tools"]
     image: wealdtech/ethdo:${ETHDO_DOCKER_TAG}
     volumes:
-      - dirk-data:/data
-    networks:
-      - internet_access
+      - ./data/wallets:/data/wallets
     command:
       - --base-dir=/data/wallets
       - wallet
@@ -41,25 +98,28 @@ services:
   create-accounts:
     profiles: ["tools"]
     image: wealdtech/ethdo:${ETHDO_DOCKER_TAG}
-    networks:
-      - internet_access
     volumes:
       - ./config/certs:/config/certs:ro
-    entrypoint: ["/bin/bash","-c"]
-    command:
-      - |
-        set -e
-        for (( i=${STARTACCOUNT}; i<=${ENDACCOUNT}; i++ )); do
-          /app/ethdo account create \
-          --remote=${DIRK1}.${DOMAIN}:13141 \
-          --server-ca-cert /config/certs/dirk_authority.crt \
-          --client-cert /config/certs/vouch${VOUCH_INSTANCE}.crt \
-          --client-key /config/certs/vouch${VOUCH_INSTANCE}.key \
-          --account=${WALLET_NAME}/val-$$i \
-          --signing-threshold=3 \traefik
-          --participants=5
-          echo Created validator account $$i
-        done
+      - ./data/wallets:/data/wallets
+    # entrypoint: ["/bin/bash","-c"]
+    # command:
+    #   - |
+    #     set -e
+    #     for (( i=${STARTACCOUNT}; i<=${ENDACCOUNT}; i++ )); do
+    #       /app/ethdo account create \
+    #       --base-dir=/data/wallets \
+    #       --remote=dirk1:13141 \
+    #       --server-ca-cert /config/certs/dirk_authority.crt \
+    #       --client-cert /config/certs/vouch1.crt \
+    #       --client-key /config/certs/vouch1.key \
+    #       --account=${WALLET_NAME}/val-$$i \
+    #       --signing-threshold=3 \
+    #       --participants=5
+    #       echo Created validator account $$i
+    #     done
+    command: "-f /dev/null"
+    entrypoint: /usr/bin/tail
+    tty: true
 
   create-depositdata:
     profiles: ["tools"]
@@ -67,8 +127,7 @@ services:
     volumes:
       - ./config/certs:/config/certs:ro
       - ./config/depositdata:/config/depositdata:rw
-    networks:
-      - internet_access
+      - ./config/passphrases:/config/passphrases:ro
     entrypoint: ["/bin/bash","-c"]
     command:
       - |
@@ -76,7 +135,7 @@ services:
         for (( i=${STARTACCOUNT}; i<=${ENDACCOUNT}; i++ )); do
           /app/ethdo validator depositdata \
           --depositvalue 32Ether \
-          --remote=${DIRK1}.${DOMAIN}:13141 \
+          --remote=${DIRK5}:13141 \
           --server-ca-cert /config/certs/dirk_authority.crt \
           --client-cert /config/certs/vouch${VOUCH_INSTANCE}.crt \
           --client-key /config/certs/vouch${VOUCH_INSTANCE}.key \
@@ -92,24 +151,24 @@ services:
     image: wealdtech/ethdo:${ETHDO_DOCKER_TAG}
     volumes:
       - ./config/certs:/config/certs:ro
-    networks:
-      - internet_access
+      - ./data/wallets:/tmp/wallets
     entrypoint: ["/bin/bash","-c"]
     command:
       - |
         set -e
         account=${WALLET_NAME}/val-1
         echo Verifying one account across five instances
-        echo All five should show 3/5 threshold for val-1, and matching
+        echo All five should show 3/5 threshold for $$account, and matching
         echo public key and participants. The withdrawal credentials
         echo can be ignored.
         echo
-        for host in ${DIRK1}.${DOMAIN} ${DIRK2}.${DOMAIN} ${DIRK3}.${DOMAIN} ${DIRK4}.${DOMAIN} ${DIRK5}.${DOMAIN}; do
+        for host in ${DIRK1} ${DIRK2} ${DIRK3} ${DIRK4} ${DIRK5}; do
           /app/ethdo account info \
+          --base-dir=/tmp/wallets \
           --remote=$$host:13141 \
           --server-ca-cert /config/certs/dirk_authority.crt \
-          --client-cert /config/certs/vouch${VOUCH_INSTANCE}.crt \
-          --client-key /config/certs/vouch${VOUCH_INSTANCE}.key \
+          --client-cert /config/certs/vouch1.crt \
+          --client-key /config/certs/vouch1.key \
           --account=$$account \
           --verbose
           echo
@@ -121,8 +180,6 @@ services:
     volumes:
       - ./config/certs:/config/certs:ro
       - ./config/exitmessages:/config/exitmessages:rw
-    networks:
-      - internet_access
     entrypoint: ["/bin/bash","-c"]
     command:
       - |
@@ -131,7 +188,7 @@ services:
         for (( i=${STARTACCOUNT}; i<=${ENDACCOUNT}; i++ )); do
           /app/ethdo validator exit \
           --json \
-          --remote=${DIRK1}.${DOMAIN}:13141 \
+          --remote=${DIRK1}:13141 \
           --server-ca-cert /config/certs/dirk_authority.crt \
           --client-cert /config/certs/vouch${VOUCH_INSTANCE}.crt \
           --client-key /config/certs/vouch${VOUCH_INSTANCE}.key \
@@ -151,8 +208,6 @@ services:
     volumes:
       - ./config/exitmessages:/app/encryptor/input/:ro
       - ./config/exits:/app/encryptor/output/:rw
-    networks:
-      - internet_access
     environment:
       - MESSAGES_PASSWORD=${EXIT_PASSPHRASE}
     user: root
@@ -164,9 +219,7 @@ services:
     volumes:
       - ./config/certs:/config/certs:ro
       - ./keys:/app/keys
-      - dirk-data:/data
-    networks:
-      - internet_access
+      - ./data/dirk/export:/data
     entrypoint: ["/bin/bash","-c"]
     command:
       - |
@@ -190,9 +243,6 @@ services:
         --passphrase=$${__passphrase} \
         > /app/keys/dirk${DIRK_INSTANCE}-export.dat
         echo
-
-volumes:
-  dirk-data:
 
 networks:
   # bridge network - this networks gets internet access!

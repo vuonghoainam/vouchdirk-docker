@@ -6,3 +6,4 @@ prometheus/custom-prom.yml
 !keys/.empty
 keys
 .wallet_created
+data/**

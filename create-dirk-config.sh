@@ -39,8 +39,8 @@ for i in {1..5}; do
   openssl genrsa -out dirk$i.key 4096
   cp generic.ext dirk$i.ext
   varname=DIRK$i
-  echo "DNS.1 = ${!varname}.${DOMAIN}" >> dirk$i.ext
-  openssl req -out dirk$i.csr -key dirk$i.key -new -subj "/CN=${!varname}.${DOMAIN}" -addext "subjectAltName=DNS:${!varname}.${DOMAIN}"
+  echo "DNS.1 = ${!varname}" >> dirk$i.ext
+  openssl req -out dirk$i.csr -key dirk$i.key -new -subj "/CN=${!varname}" -addext "subjectAltName=DNS:${!varname}"
   openssl x509 -req -in dirk$i.csr -CA dirk_authority.crt -CAkey dirk_authority.key -CAcreateserial -out dirk$i.crt -days 1825 -sha256 -extfile dirk$i.ext
   openssl x509 -in dirk$i.crt -text -noout
 done
@@ -78,7 +78,7 @@ server:
   # id should be randomly chosen 8-digit numeric ID; it must be unique across all of your Dirk instances.
   id: ${id[$i]}
   # name is the name of your server, as specified in its SSL certificate.
-  name: ${!varname}.${DOMAIN}
+  name: ${!varname}
   # listen-address is the interface and port on which Dirk will listen for requests; change 127.0.0.1
   # to 0.0.0.0 to listen on all network interfaces.
   listen-address: 0.0.0.0:13141
@@ -100,7 +100,7 @@ certificates:
 stores:
 - name: Local
   type: filesystem
-  location: /data/wallets
+  location: /tmp/wallets
 metrics:
   # listen-address is where Dirk's Prometheus server will present.  If this value is not present then Dirk
   # will not gather metrics.
@@ -108,11 +108,11 @@ metrics:
 peers:
   # These are the IDs and addresses of the peers with which Dirk can communicate for distributed key generation.
   # At a minimum it must include this instance.
-  ${id[1]}: ${DIRK1}.${DOMAIN}:13141
-  ${id[2]}: ${DIRK2}.${DOMAIN}:13141
-  ${id[3]}: ${DIRK3}.${DOMAIN}:13141
-  ${id[4]}: ${DIRK4}.${DOMAIN}:13141
-  ${id[5]}: ${DIRK5}.${DOMAIN}:13141
+  ${id[1]}: ${DIRK1}:13141
+  ${id[2]}: ${DIRK2}:13141
+  ${id[3]}: ${DIRK3}:13141
+  ${id[4]}: ${DIRK4}:13141
+  ${id[5]}: ${DIRK5}:13141
 unlocker:
   # account-passphrases is a list of passphrases that can be used to unlock wallets.  Each entry is a majordomo URL.
   account-passphrases:
@@ -228,11 +228,11 @@ strategies:
 accountmanager:
   dirk:
     endpoints:
-      - ${DIRK1}.${DOMAIN}:13141
-      - ${DIRK2}.${DOMAIN}:13141
-      - ${DIRK3}.${DOMAIN}:13141
-      - ${DIRK4}.${DOMAIN}:13141
-      - ${DIRK5}.${DOMAIN}:13141
+      - ${DIRK1}:13141
+      - ${DIRK2}:13141
+      - ${DIRK3}:13141
+      - ${DIRK4}:13141
+      - ${DIRK5}:13141
     client-cert: file:///config/certs/vouch$i.crt
     client-key: file:///config/certs/vouch$i.key
     ca-cert: file:///config/certs/dirk_authority.crt
@@ -259,7 +259,7 @@ running_mode: SIGNER
 beacon_node_url: ${CL1}
 
 dirk:
-  endpoint: ${DIRK1}.${DOMAIN}:13141
+  endpoint: ${DIRK1}:13141
   client_cert: /config/certs/vouch1.crt
   client_key: /config/certs/vouch1.key
   ca_cert: /config/certs/dirk_authority.crt
