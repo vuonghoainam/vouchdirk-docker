@@ -20,7 +20,7 @@ services:
       - ./config/certs:/config/certs:ro
       - ./config/passphrases:/config/passphrases:ro
       - ./data/dirk/dirk1:/data
-      - ./data/wallets/:/tmp/wallets/
+      - ./data/wallets/dirk1/:/tmp/wallets/
     <<: *logging
 
   dirk2:
@@ -35,7 +35,7 @@ services:
       - ./config/certs:/config/certs:ro
       - ./config/passphrases:/config/passphrases:ro
       - ./data/dirk/dirk2:/data
-      - ./data/wallets/:/tmp/wallets/
+      - ./data/wallets/dirk2/:/tmp/wallets/
     <<: *logging
 
   dirk3:
@@ -50,7 +50,7 @@ services:
       - ./config/certs:/config/certs:ro
       - ./config/passphrases:/config/passphrases:ro
       - ./data/dirk/dirk3:/data
-      - ./data/wallets/:/tmp/wallets/
+      - ./data/wallets/dirk3/:/tmp/wallets/
     <<: *logging
 
   dirk4:
@@ -65,7 +65,7 @@ services:
       - ./config/certs:/config/certs:ro
       - ./config/passphrases:/config/passphrases:ro
       - ./data/dirk/dirk4:/data
-      - ./data/wallets/:/tmp/wallets/
+      - ./data/wallets/dirk4/:/tmp/wallets/
     <<: *logging
 
   dirk5:
@@ -80,7 +80,7 @@ services:
       - ./config/certs:/config/certs:ro
       - ./config/passphrases:/config/passphrases:ro
       - ./data/dirk/dirk5:/data
-      - ./data/wallets/:/tmp/wallets/
+      - ./data/wallets/dirk5/:/tmp/wallets/
     <<: *logging
 
   create-wallet:
@@ -126,23 +126,26 @@ services:
       - ./config/certs:/config/certs:ro
       - ./config/depositdata:/config/depositdata:rw
       - ./config/passphrases:/config/passphrases:ro
-    entrypoint: ["/bin/bash","-c"]
-    command:
-      - |
-        set -e
-        for (( i=${STARTACCOUNT}; i<=${ENDACCOUNT}; i++ )); do
-          /app/ethdo validator depositdata \
-          --depositvalue 32Ether \
-          --remote=dirk1:13141 \
-          --server-ca-cert /config/certs/dirk_authority.crt \
-          --client-cert /config/certs/vouch1.crt \
-          --client-key /config/certs/vouch1.key \
-          --validatoraccount DistributedWallet/val-$$i \
-          --launchpad \
-          --forkversion ${FORK_VERSION} \
-          --withdrawaladdress ${WITHDRAWAL_ADDRESS} > /config/depositdata/deposit-val-$$i.json
-          echo Created depositdata for validator $$i
-        done
+    # entrypoint: ["/bin/bash","-c"]
+    # command:
+    #   - |
+    #     set -e
+    #     for (( i=${STARTACCOUNT}; i<=${ENDACCOUNT}; i++ )); do
+    #       /app/ethdo validator depositdata \
+    #       --depositvalue 32Ether \
+    #       --remote=dirk1:13141 \
+    #       --server-ca-cert /config/certs/dirk_authority.crt \
+    #       --client-cert /config/certs/vouch1.crt \
+    #       --client-key /config/certs/vouch1.key \
+    #       --validatoraccount DistributedWallet/val-$$i \
+    #       --launchpad \
+    #       --forkversion ${FORK_VERSION} \
+    #       --withdrawaladdress ${WITHDRAWAL_ADDRESS} > /config/depositdata/deposit-val-$$i.json
+    #       echo Created depositdata for validator $$i
+    #     done
+    command: "-f /dev/null"
+    entrypoint: /usr/bin/tail
+    tty: true
 
   verify-account:
     profiles: ["tools"]
