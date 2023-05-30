@@ -148,6 +148,7 @@ beacon-node-addresses:
   - ${CL1}
   - ${CL2}
   - ${CL3}
+  - ${CL4}
 
 # metrics is the module that logs metrics, in this case using prometheus.
 metrics:
@@ -181,6 +182,7 @@ submitter:
 # information is available in the documentation.
 blockrelay:
   fallback-fee-recipient: '${FEE_RECIPIENT}'
+  listen-address: '0.0.0.0:12345'
   config:
     url: file:///config/vouch-ee.json
 
@@ -194,6 +196,7 @@ strategies:
       - ${CL1}
       - ${CL2}
       - ${CL3}
+      - ${CL4}
   # The attestationdata strategy obtains attestation data from multiple sources.
   attestationdata:
     # style can be 'best', which obtains attestations from all nodes and selects the best, or 'first', which uses the first returned
@@ -203,6 +206,7 @@ strategies:
       - ${CL1}
       - ${CL2}
       - ${CL3}
+      - ${CL4}
   # The aggregateattestation strategy obtains aggregate attestations from multiple sources.
   # Note that the list of nodes here must be a subset of those in the attestationdata strategy.  If not, the nodes will not have
   # been gathering the attestations to aggregate and will error when the aggregate request is made.
@@ -215,6 +219,7 @@ strategies:
       - ${CL1}
       - ${CL2}
       - ${CL3}
+      - ${CL4}
   # The synccommitteecontribution strategy obtains sync committee contributions from multiple sources.
   synccommitteecontribution:
     # style can be 'best', which obtains contributions from all nodes and selects the best, or 'first', which uses the first returned
@@ -224,6 +229,7 @@ strategies:
       - ${CL1}
       - ${CL2}
       - ${CL3}
+      - ${CL4}
 
 accountmanager:
   dirk:

@@ -20,7 +20,7 @@ services:
       - ./config/certs:/config/certs:ro
       - ./config/passphrases:/config/passphrases:ro
       - ./data/dirk/dirk1:/data
-      - ./data/wallets/dirk1/wallets/:/tmp/wallets/
+      - ./data/wallets/:/tmp/wallets/
     <<: *logging
 
   dirk2:
@@ -35,7 +35,7 @@ services:
       - ./config/certs:/config/certs:ro
       - ./config/passphrases:/config/passphrases:ro
       - ./data/dirk/dirk2:/data
-      - ./data/wallets/dirk2/wallets/:/tmp/wallets/
+      - ./data/wallets/:/tmp/wallets/
     <<: *logging
 
   dirk3:
@@ -50,7 +50,7 @@ services:
       - ./config/certs:/config/certs:ro
       - ./config/passphrases:/config/passphrases:ro
       - ./data/dirk/dirk3:/data
-      - ./data/wallets/dirk3/wallets/:/tmp/wallets/
+      - ./data/wallets/:/tmp/wallets/
     <<: *logging
 
   dirk4:
@@ -65,7 +65,7 @@ services:
       - ./config/certs:/config/certs:ro
       - ./config/passphrases:/config/passphrases:ro
       - ./data/dirk/dirk4:/data
-      - ./data/wallets/dirk4/wallets/:/tmp/wallets/
+      - ./data/wallets/:/tmp/wallets/
     <<: *logging
 
   dirk5:
@@ -80,7 +80,7 @@ services:
       - ./config/certs:/config/certs:ro
       - ./config/passphrases:/config/passphrases:ro
       - ./data/dirk/dirk5:/data
-      - ./data/wallets/dirk5/wallets/:/tmp/wallets/
+      - ./data/wallets/:/tmp/wallets/
     <<: *logging
 
   create-wallet:
@@ -101,30 +101,28 @@ services:
     volumes:
       - ./config/certs:/config/certs:ro
       - ./data/wallets:/data/wallets
-    # entrypoint: ["/bin/bash","-c"]
-    # command:
-    #   - |
-    #     set -e
-    #     for (( i=${STARTACCOUNT}; i<=${ENDACCOUNT}; i++ )); do
-    #       /app/ethdo account create \
-    #       --base-dir=/data/wallets \
-    #       --remote=dirk1:13141 \
-    #       --server-ca-cert /config/certs/dirk_authority.crt \
-    #       --client-cert /config/certs/vouch1.crt \
-    #       --client-key /config/certs/vouch1.key \
-    #       --account=${WALLET_NAME}/val-$$i \
-    #       --signing-threshold=3 \
-    #       --participants=5
-    #       echo Created validator account $$i
-    #     done
-    command: "-f /dev/null"
-    entrypoint: /usr/bin/tail
-    tty: true
+    entrypoint: ["/bin/bash","-c"]
+    command:
+      - |
+        set -e
+        for (( i=${STARTACCOUNT}; i<=${ENDACCOUNT}; i++ )); do
+          /app/ethdo account create \
+          --base-dir=/data/wallets \
+          --remote=dirk1:13141 \
+          --server-ca-cert /config/certs/dirk_authority.crt \
+          --client-cert /config/certs/vouch1.crt \
+          --client-key /config/certs/vouch1.key \
+          --account=${WALLET_NAME}/val-$$i \
+          --signing-threshold=3 \
+          --participants=5
+          echo Created validator account $$i
+        done
 
   create-depositdata:
     profiles: ["tools"]
     image: wealdtech/ethdo:${ETHDO_DOCKER_TAG}
     volumes:
+      - ./data/wallets:/data/wallets
       - ./config/certs:/config/certs:ro
       - ./config/depositdata:/config/depositdata:rw
       - ./config/passphrases:/config/passphrases:ro
@@ -135,11 +133,11 @@ services:
         for (( i=${STARTACCOUNT}; i<=${ENDACCOUNT}; i++ )); do
           /app/ethdo validator depositdata \
           --depositvalue 32Ether \
-          --remote=${DIRK5}:13141 \
+          --remote=dirk1:13141 \
           --server-ca-cert /config/certs/dirk_authority.crt \
-          --client-cert /config/certs/vouch${VOUCH_INSTANCE}.crt \
-          --client-key /config/certs/vouch${VOUCH_INSTANCE}.key \
-          --validatoraccount ${WALLET_NAME}/val-$$i \
+          --client-cert /config/certs/vouch1.crt \
+          --client-key /config/certs/vouch1.key \
+          --validatoraccount DistributedWallet/val-$$i \
           --launchpad \
           --forkversion ${FORK_VERSION} \
           --withdrawaladdress ${WITHDRAWAL_ADDRESS} > /config/depositdata/deposit-val-$$i.json

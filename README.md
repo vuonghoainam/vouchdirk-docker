@@ -223,4 +223,51 @@ Failed to sign: failed to obtain signature: not enough signatures: 2 signed, 0 d
 root@77451040715d:/app# /app/ethdo signature sign     --remote=dirk1:13141     --server-ca-cert /config/certs/dirk_authority.crt     --client-cert /config/certs/vouch1.crt     --client-key /config/certs/vouch1.key     --account="$ACCOUNT_NAME"   --data=0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f   --domain=0xf000000000000000000000000000000000000000000000000000000000000000   --verbose
 Signing 0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f with domain 0xf000000000000000000000000000000000000000000000000000000000000000 by public key 0x8408600b7be17923157903dbd2acb537aef9464058c5218b646104b2697857e7c0e4a668ac5b7297b7e258a500e38148
 0xb63fd76b43b2fb7c6734cd8666c23dd8f86527e334f668df2e4564fb84fd05d88a9d33c5c6714dacbbf64bd5b0b5109e09e8363d28326620acb5e863c215fd138b8d469ea73b65a83cdac697c71efbc6f6cc8fb4d82ddc236ceb56682629f8e7
+
+
+
+root@77451040715d:/app# /app/ethdo signature sign \
+    --remote=dirk1:13141 \
+    --server-ca-cert /config/certs/dirk_authority.crt \
+    --client-cert /config/certs/vouch1.crt \
+    --client-key /config/certs/vouch1.key \
+    --account="$ACCOUNT_NAME" \
+  --data=0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f \
+  --domain=0xf000000000000000000000000000000000000000000000000000000000000000 \
+  --verbose
+Signing 0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f with domain 0xf000000000000000000000000000000000000000000000000000000000000000 by public key 0x8569c7077a917bee013b4c6acdb7fd090e89a260316a68ce839825b8c876210b2eca4ae5c8eb9766ff1105e6f00c2bd9
+Failed to sign: failed to obtain signature: not enough signatures: 1 signed, 4 denied, 0 failed, 0 errored
+
+-------
+docker compose up -d
+docker compose run —rm create-wallet
+Update .env for start and end account index
+docker compose restart dirk{1-5}
+docker compose run —rm create-accounts
+docker compose restart dirk{1-5}
+docker compose run --rm verify-account
+docker compose run --rm create-depositdata
+
+Test sign:
+/app/ethdo signature sign \
+    --remote=dirk1:13141 \
+    --server-ca-cert /config/certs/dirk_authority.crt \
+    --client-cert /config/certs/vouch1.crt \
+    --client-key /config/certs/vouch1.key \
+    --account="$ACCOUNT_NAME" \
+  --data=0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f \
+  --domain=0xf000000000000000000000000000000000000000000000000000000000000000 \
+  --verbose
+
+
+jq -n '[inputs|add]' config/depositdata/deposit-val-1.json > config/depositdata/deposits.json
+
+/app/ethdo deposit verify --data=/config/depositdata/deposit-val-1.json 
+Withdrawal public key or address not supplied; withdrawal credentials NOT checked
+Amount verified
+Validator public key not suppled; NOT checked
+Deposit data root verified
+Fork version incorrect
+Deposit failed verification
+
 ```
