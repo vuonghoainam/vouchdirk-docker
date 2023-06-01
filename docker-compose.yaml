@@ -22,6 +22,8 @@ services:
       - ./data/dirk/dirk1:/data
       - ./data/wallets/dirk1/:/tmp/wallets/
     <<: *logging
+    networks:
+      - lydia_internet_access
 
   dirk2:
     image: attestant/dirk:${DIRK_DOCKER_TAG}
@@ -37,6 +39,8 @@ services:
       - ./data/dirk/dirk2:/data
       - ./data/wallets/dirk2/:/tmp/wallets/
     <<: *logging
+    networks:
+      - lydia_internet_access
 
   dirk3:
     image: attestant/dirk:${DIRK_DOCKER_TAG}
@@ -52,6 +56,8 @@ services:
       - ./data/dirk/dirk3:/data
       - ./data/wallets/dirk3/:/tmp/wallets/
     <<: *logging
+    networks:
+      - lydia_internet_access
 
   dirk4:
     image: attestant/dirk:${DIRK_DOCKER_TAG}
@@ -68,6 +74,7 @@ services:
       - ./data/wallets/dirk4/:/tmp/wallets/
     <<: *logging
 
+
   dirk5:
     image: attestant/dirk:${DIRK_DOCKER_TAG}
     hostname: dirk5
@@ -82,6 +89,8 @@ services:
       - ./data/dirk/dirk5:/data
       - ./data/wallets/dirk5/:/tmp/wallets/
     <<: *logging
+    networks:
+      - lydia_internet_access
 
   create-wallet:
     profiles: ["tools"]
@@ -94,6 +103,8 @@ services:
       - create
       - --type=distributed
       - --wallet=${WALLET_NAME}
+    networks:
+      - lydia_internet_access
 
   create-accounts:
     profiles: ["tools"]
@@ -117,6 +128,8 @@ services:
           --participants=5
           echo Created validator account $$i
         done
+    networks:
+      - lydia_internet_access
 
   create-depositdata:
     profiles: ["tools"]
@@ -147,6 +160,7 @@ services:
     entrypoint: /usr/bin/tail
     tty: true
 
+
   verify-account:
     profiles: ["tools"]
     image: wealdtech/ethdo:${ETHDO_DOCKER_TAG}
@@ -174,6 +188,8 @@ services:
           --verbose
           echo
         done
+    networks:
+      - lydia_internet_access
 
   sign-exits:
     profiles: ["tools"]
@@ -202,6 +218,8 @@ services:
         echo Please run \"docker-compose run --rm encrypt-exits\" next.
         echo They\'ll be in ./config/exits afterwards, encrypted with the password in .env
         echo Please remember to delete the unencrypted files in ./config/exitmessages
+    networks:
+      - lydia_internet_access
 
   encrypt-exits:
     profiles: ["tools"]
@@ -244,8 +262,49 @@ services:
         --passphrase=$${__passphrase} \
         > /app/keys/dirk${DIRK_INSTANCE}-export.dat
         echo
+    networks:
+      - lydia_internet_access
+
+  jaeger:
+    hostname: jaeger
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "6831"
+      - "16686:16686"
+    networks:
+      - lydia_internet_access
+
+  vouch1:
+    image: attestant/vouch:${VOUCH_DOCKER_TAG}
+    hostname: vouch1-${MEV_HOST}
+    restart: unless-stopped
+    command: ["--base-dir=/config"]
+    volumes:
+      - ./config/vouch1.yml:/config/vouch.yml:ro
+      - ./config/vouch-ee.json:/config/vouch-ee.json:ro
+      - ./config/certs:/config/certs:ro
+    ports:
+      - 12345:12345/tcp
+    <<: *logging
+    networks:
+      - lydia_internet_access
+
+  vouch2:
+    image: attestant/vouch:${VOUCH_DOCKER_TAG}
+    hostname: vouch2-${MEV_HOST}
+    restart: unless-stopped
+    command: ["--base-dir=/config"]
+    volumes:
+      - ./config/vouch2.yml:/config/vouch.yml:ro
+      - ./config/vouch-ee.json:/config/vouch-ee.json:ro
+      - ./config/certs:/config/certs:ro
+    ports:
+      - 12346:12345/tcp
+    <<: *logging
+    networks:
+      - lydia_internet_access
 
 networks:
-  # bridge network - this networks gets internet access!
-  internet_access:
-    driver: bridge
+  lydia_internet_access:
+    name: lydia_internet_access
+    external: true
