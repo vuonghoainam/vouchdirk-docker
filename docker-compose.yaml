@@ -73,7 +73,8 @@ services:
       - ./data/dirk/dirk4:/data
       - ./data/wallets/dirk4/:/tmp/wallets/
     <<: *logging
-
+    networks:
+      - lydia_internet_access
 
   dirk5:
     image: attestant/dirk:${DIRK_DOCKER_TAG}
@@ -139,6 +140,8 @@ services:
       - ./config/certs:/config/certs:ro
       - ./config/depositdata:/config/depositdata:rw
       - ./config/passphrases:/config/passphrases:ro
+    networks:
+      - lydia_internet_access
     # entrypoint: ["/bin/bash","-c"]
     # command:
     #   - |
@@ -231,6 +234,8 @@ services:
       - MESSAGES_PASSWORD=${EXIT_PASSPHRASE}
     user: root
     command: [ "node", "/app/dist/encryptor/encrypt.js"]
+    networks:
+      - lydia_internet_access
 
   export-keys:
     profiles: ["tools"]
@@ -269,7 +274,7 @@ services:
     hostname: jaeger
     image: jaegertracing/all-in-one:latest
     ports:
-      - "6831"
+      - "6831:6831/udp"
       - "16686:16686"
     networks:
       - lydia_internet_access

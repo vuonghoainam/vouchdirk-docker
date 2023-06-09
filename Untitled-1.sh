@@ -1,7 +1,7 @@
 # Run in container 
 DIRK_INSTANCE=dirk1 # go from 1 to 5
 WALLET_NAME=LydiaDistributedWallet
-ACCOUNT_NAME=${WALLET_NAME}/val-1
+ACCOUNT_NAME=${WALLET_NAME}/val-2
 FORK_VERSION=0x00001020
 WITHDRAWAL_ADDRESS=0x2fF53aeC1Ac58b9691B22Be6cD8bad338b2F6ce8
 
@@ -49,7 +49,7 @@ cp -r /data/wallets/${DIRK_INSTANCE}/* /data/wallets/dirk5/
   --validatoraccount $ACCOUNT_NAME \
   --launchpad \
   --forkversion ${FORK_VERSION} \
-  --withdrawaladdress ${WITHDRAWAL_ADDRESS} > /config/depositdata/deposit-val-1.json
+  --withdrawaladdress ${WITHDRAWAL_ADDRESS} > /config/depositdata/deposit-val-2.json
 
 # Run in host
 jq -n '[inputs|add]' config/depositdata/deposit-val-{1..3}.json > config/depositdata/deposits.json
